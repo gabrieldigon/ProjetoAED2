@@ -2,7 +2,7 @@ import pygame
 from random import choice
 import json
 
-RES = WIDTH, HEIGHT = 1200, 900
+RES = WIDTH, HEIGHT = 900, 900
 TILE = 50
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
@@ -20,7 +20,7 @@ class Cell:
     def draw_current_cell(self):
         x, y = self.x * TILE, self.y * TILE
         
-        pygame.draw.rect(sc, pygame.Color('#f70067'),
+        pygame.draw.rect(sc, pygame.Color('#000000'),
                          (x + 2, y + 2, TILE - 2, TILE - 2))
         
     def draw(self):
@@ -94,7 +94,7 @@ def reset_game_state():
     colors, color = [], 40
 
 reset_game_state() 
-
+posicaoNoGrid = 0
 while True:
     sc.fill(pygame.Color('#a6d5e2'))
     
@@ -104,6 +104,19 @@ while True:
 
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             reset_game_state()
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_d:
+            posicaoNoGrid += 1
+            current_cell = grid_cells[posicaoNoGrid]
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_a:
+            posicaoNoGrid -= 1
+            current_cell = grid_cells[posicaoNoGrid]
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_w:
+            posicaoNoGrid -= 18
+            current_cell = grid_cells[posicaoNoGrid]
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+            posicaoNoGrid += 18
+            current_cell = grid_cells[posicaoNoGrid]
+            
 
             
     [cell.draw() for cell in grid_cells]
