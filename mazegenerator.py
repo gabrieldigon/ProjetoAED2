@@ -1,15 +1,9 @@
 import pygame
 from random import choice
-import json
 
 RES = WIDTH, HEIGHT = 900, 900
 TILE = 50
 cols, rows = WIDTH // TILE, HEIGHT // TILE
-
-pygame.init()
-sc = pygame.display.set_mode(RES)
-pygame.display.set_caption('Maze generator')
-clock = pygame.time.Clock()
 
 class Cell:
     def __init__(self, x, y):
@@ -19,28 +13,27 @@ class Cell:
     
     def draw_current_cell(self):
         x, y = self.x * TILE, self.y * TILE
-        
-        pygame.draw.rect(sc, pygame.Color('#000000'),
+        pygame.draw.rect(sc, pygame.Color('#228b22'),
                          (x + 2, y + 2, TILE - 2, TILE - 2))
         
     def draw(self):
         x, y = self.x * TILE, self.y * TILE
         if self.visited:
-            pygame.draw.rect(sc, pygame.Color('#3eb489'),
+            pygame.draw.rect(sc, pygame.Color('#FFFFFF'),
                              (x, y, TILE, TILE))
         if self.walls['top']:
-            pygame.draw.line(sc, pygame.Color('#030659'), 
+            pygame.draw.line(sc, pygame.Color('#000000'), 
                              (x, y), (x + TILE, y), 6)
         if self.walls['right']:
-            pygame.draw.line(sc, pygame.Color('#030659'), 
+            pygame.draw.line(sc, pygame.Color('#000000'), 
                              (x + TILE, y), 
                              (x + TILE, y + TILE), 6)
         if self.walls['bottom']:
-            pygame.draw.line(sc, pygame.Color('#030659'), 
+            pygame.draw.line(sc, pygame.Color('#000000'), 
                              (x + TILE, y + TILE),
                              (x , y + TILE), 6)
         if self.walls['left']:
-            pygame.draw.line(sc, pygame.Color('#030659'), 
+            pygame.draw.line(sc, pygame.Color('#000000'), 
                              (x, y + TILE), (x, y), 6)
             
     def check_cell(self, x, y):
@@ -93,10 +86,16 @@ def reset_game_state():
     stack = []
     colors, color = [], 40
 
+# Logica do jogo
+
+pygame.init()
+sc = pygame.display.set_mode(RES)
+pygame.display.set_caption('Maze generator')
+clock = pygame.time.Clock()
 reset_game_state() 
 posicaoNoGrid = 0
 while True:
-    sc.fill(pygame.Color('#a6d5e2'))
+    sc.fill(pygame.Color('#FFFFFF'))
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -105,17 +104,21 @@ while True:
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             reset_game_state()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_d:
-            posicaoNoGrid += 1
-            current_cell = grid_cells[posicaoNoGrid]
+            if current_cell.walls["right"] == False:
+                posicaoNoGrid += 1
+                current_cell = grid_cells[posicaoNoGrid]
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_a:
-            posicaoNoGrid -= 1
-            current_cell = grid_cells[posicaoNoGrid]
+            if current_cell.walls["left"] == False:
+                posicaoNoGrid -= 1
+                current_cell = grid_cells[posicaoNoGrid]
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_w:
-            posicaoNoGrid -= 18
-            current_cell = grid_cells[posicaoNoGrid]
+            if current_cell.walls["top"] == False:
+                posicaoNoGrid -= 18
+                current_cell = grid_cells[posicaoNoGrid]
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-            posicaoNoGrid += 18
-            current_cell = grid_cells[posicaoNoGrid]
+            if current_cell.walls["bottom"] == False:
+                posicaoNoGrid += 18
+                current_cell = grid_cells[posicaoNoGrid]
             
 
             
@@ -137,7 +140,6 @@ while True:
         current_cell=next_cell
     elif stack: 
         current_cell = stack.pop()
-    
-    
+        
     pygame.display.flip()
     clock.tick() 
