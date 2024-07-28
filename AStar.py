@@ -41,7 +41,23 @@ def extract_min(heap):
     min_heapify(heap, len(heap), 0)
     return min_elem
 
-def a_star(start, goal):
+def create_graph_from_maze(grid_cells):
+    nodes = {}
+    for cell in grid_cells:
+        name = (cell.x, cell.y)
+        neighbors = {}
+        if not cell.walls['top']:
+            neighbors[(cell.x, cell.y - 1)] = 1
+        if not cell.walls['right']:
+            neighbors[(cell.x + 1, cell.y)] = 1
+        if not cell.walls['bottom']:
+            neighbors[(cell.x, cell.y + 1)] = 1
+        if not cell.walls['left']:
+            neighbors[(cell.x - 1, cell.y)] = 1
+        nodes[name] = Node(name, neighbors)
+    return nodes
+
+def a_star(start, goal,nodes):
     open_list = [start]
     closed_list = set()
 
@@ -58,7 +74,7 @@ def a_star(start, goal):
             while current_node:
                 path.append(current_node.name)
                 current_node = current_node.parent
-            return path[::-1]  # Invertendo o caminho
+            return path[::-1]  
 
         closed_list.add(current_node)
 
@@ -80,32 +96,4 @@ def a_star(start, goal):
 
     return None  # Se não houver caminho
 
-# Exemplo de uso:
-start = Node((0, 0), neighbors={(1, 0): 1, (0, 1): 1})
-goal = Node((2, 2))
 
-# Configurando o grafo:
-nodes = {
-    (0, 0): start,
-    (1, 0): Node((1, 0), neighbors={(2, 0): 1}),
-    (0, 1): Node((0, 1), neighbors={(0, 2): 1}),
-    (2, 0): Node((2, 0), neighbors={(2, 1): 1}),
-    (0, 2): Node((0, 2), neighbors={(1, 2): 1}),
-    (2, 1): Node((2, 1), neighbors={(2, 2): 1}),
-    (1, 2): Node((1, 2), neighbors={(2, 2): 1}),
-    (2, 2): goal
-}
-
-# Ligando os nós
-start.neighbors[(1, 0)] = 1
-start.neighbors[(0, 1)] = 1
-nodes[(1, 0)].neighbors[(2, 0)] = 1
-nodes[(0, 1)].neighbors[(0, 2)] = 1
-nodes[(2, 0)].neighbors[(2, 1)] = 1
-nodes[(0, 2)].neighbors[(1, 2)] = 1
-nodes[(2, 1)].neighbors[(2, 2)] = 1
-nodes[(1, 2)].neighbors[(2, 2)] = 1
-
-# Executando o algoritmo
-caminho = a_star(start, goal)
-print("Caminho encontrado:", caminho)

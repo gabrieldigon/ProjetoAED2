@@ -1,85 +1,105 @@
 import pygame
-import random
+from random import choice
 
-# Configurações
-CELL_SIZE = 30
-GRID_SIZE = 11
-WINDOW_SIZE = GRID_SIZE * CELL_SIZE
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
+# Maze generation settings
+RES = WIDTH, HEIGHT = 900, 900
+TILE = 50
+cols, rows = WIDTH // TILE, HEIGHT // TILE
 
+class Cell:
+    def __init__(self, x, y):
+        self.x, self.y = x, y
+        self.walls = {'top': True, 'right': True, 'bottom': True, 'left': True}
+        self.visited = False
+    
+    def draw_current_cell(self):
+        x, y = self.x * TILE, self.y * TILE
+        pygame.draw.rect(sc, pygame.Color('#228b22'),
+                         (x + 2, y + 2, TILE - 2, TILE - 2))
+        
+    def draw(self):
+        x, y = self.x * TILE, self.y * TILE
+        if self.visited:
+            pygame.draw.rect(sc, pygame.Color('#FFFFFF'),
+                             (x, y, TILE, TILE))
+        if self.walls['top']:
+            pygame.draw.line(sc, pygame.Color('#000000'), 
+                             (x, y), (x + TILE, y), 6)
+        if self.walls['right']:
+            pygame.draw.line(sc, pygame.Color('#000000'), 
+                             (x + TILE, y), 
+                             (x + TILE, y + TILE), 6)
+        if self.walls['bottom']:
+            pygame.draw.line(sc, pygame.Color('#000000'), 
+                             (x + TILE, y + TILE),
+                             (x , y + TILE), 6)
+        if self.walls['left']:
+            pygame.draw.line(sc, pygame.Color('#000000'), 
+                             (x, y + TILE), (x, y), 6)
+            
+    def check_cell(self, x, y):
+        
+        find_index = lambda x, y: x + y * cols
+        if x < 0 or x > cols - 1 or y < 0 or y > rows - 1:
+            return False
+        
+        return grid_cells[find_index(x, y)] 
+    
+    def check_neighbors(self):
+        neighbors = []
+        
+        top = self.check_cell(self.x, self.y - 1)
+        right = self.check_cell(self.x + 1, self.y)
+        bottom = self.check_cell(self.x, self.y + 1)
+        left = self.check_cell(self.x - 1, self.y)
+        
+        if top and not top.visited:
+            neighbors.append(top)
+        if right and not right.visited:
+            neighbors.append(right)
+        if bottom and not bottom.visited:
+            neighbors.append(bottom)
+        if left and not left.visited:
+            neighbors.append(left)
+        
+        return choice(neighbors) if neighbors else False   
+    
+def remove_walls(current, next):
+    dx = current.x - next.x
+    if dx == 1:
+        current.walls['left'] = False
+        next.walls['right'] = False
+    elif dx == -1:
+        current.walls['right'] = False
+        next.walls['left'] = False
+    dy = current.y - next.y
+    if dy == 1:
+        current.walls['top'] = False
+        next.walls['bottom'] = False
+    elif dy == -1:
+        current.walls['bottom'] = False
+        next.walls['top'] = False 
+
+def reset_game_state():
+    global grid_cells, current_cell, stack, colors, color, path
+    grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
+    current_cell = grid_cells[0]
+    stack = []
+    colors, color = [], 10
+    path = []
+
+# Logic for A* algorithm
 class Node:
     def __init__(self, name, neighbors=None):
         self.name = name
         self.neighbors = neighbors or {}
-        self.g = float('inf')
-        self.h = float('inf')
-        self.f = float('inf')
-        self.parent = None
+        self.g = float('inf')  # Cost from start to this node
+        self.h = float('inf')  # Heuristic cost from this node to goal
+        self.f = float('inf')  # g + h
+        self.parent = None  # For path reconstruction
 
     def __lt__(self, other):
         return self.f < other.f
-
-def generate_maze(height, width):
-    maze = [[0 for _ in range(width)] for _ in range(height)]
-    directions = [(-2, 0), (2, 0), (0, -2), (0, 2)]
-    
-    def in_bounds(y, x):
-        return 0 <= y < height and 0 <= x < width
-    
-    def get_neighbors(y, x):
-        neighbors = []
-        for dy, dx in directions:
-            ny, nx = y + dy, x + dx
-            if in_bounds(ny, nx) and maze[ny][nx] == 0:
-                neighbors.append((ny, nx))
-        return neighbors
-    
-    def carve_maze(y, x):
-        maze[y][x] = 1
-        neighbors = get_neighbors(y, x)
-        random.shuffle(neighbors)
-        for ny, nx in neighbors:
-            if maze[ny][nx] == 0:
-                maze[(y + ny) // 2][(x + nx) // 2] = 1
-                carve_maze(ny, nx)
-    
-    start_y, start_x = 1, 1
-    carve_maze(start_y, start_x)
-    
-    return maze
-
-def draw_maze(window, maze, path=None):
-    for y in range(len(maze)):
-        for x in range(len(maze[0])):
-            color = WHITE if maze[y][x] == 1 else BLACK
-            pygame.draw.rect(window, color, pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-    
-    if path:
-        for (y, x) in path:
-            pygame.draw.rect(window, GREEN, pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-
-def create_graph_from_maze(maze):
-    height = len(maze)
-    width = len(maze[0]) if height > 0 else 0
-    nodes = {}
-    
-    for y in range(height):
-        for x in range(width):
-            if maze[y][x] == 1:
-                node_name = (y, x)
-                nodes[node_name] = Node(node_name)
-    
-    for (y, x), node in nodes.items():
-        for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            ny, nx = y + dy, x + dx
-            if (ny, nx) in nodes:
-                node.neighbors[(ny, nx)] = 1
-    
-    return nodes
 
 def heuristic(node, goal):
     return abs(goal[0] - node[0]) + abs(goal[1] - node[1])
@@ -128,7 +148,7 @@ def a_star(start, goal, nodes):
             while current_node:
                 path.append(current_node.name)
                 current_node = current_node.parent
-            return path[::-1]
+            return path[::-1]  # Inverting the path
 
         closed_list.add(current_node)
 
@@ -148,35 +168,92 @@ def a_star(start, goal, nodes):
                 if neighbor not in open_list:
                     open_list.append(neighbor)
 
-    return None
+    return None  # If there is no path
 
-def main():
-    pygame.init()
-    window = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE))
-    pygame.display.set_caption("Maze Solver")
+def create_graph_from_maze(grid_cells):
+    nodes = {}
+    for cell in grid_cells:
+        name = (cell.x, cell.y)
+        neighbors = {}
+        if not cell.walls['top']:
+            neighbors[(cell.x, cell.y - 1)] = 1
+        if not cell.walls['right']:
+            neighbors[(cell.x + 1, cell.y)] = 1
+        if not cell.walls['bottom']:
+            neighbors[(cell.x, cell.y + 1)] = 1
+        if not cell.walls['left']:
+            neighbors[(cell.x - 1, cell.y)] = 1
+        nodes[name] = Node(name, neighbors)
+    return nodes
+
+# Initialize pygame and create maze
+pygame.init()
+sc = pygame.display.set_mode(RES)
+pygame.display.set_caption('Maze generator')
+clock = pygame.time.Clock()
+reset_game_state()
+
+posicaoNoGrid = 0
+path = []
+
+while True:
+    sc.fill(pygame.Color('#FFFFFF'))
     
-    maze = generate_maze(GRID_SIZE, GRID_SIZE)
-    nodes = create_graph_from_maze(maze)
-    
-    start = nodes.get((1, 1))
-    goal = nodes.get((GRID_SIZE - 2, GRID_SIZE - 2))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            exit()
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            reset_game_state()
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_d:
+            if current_cell.walls["right"] == False:
+                posicaoNoGrid += 1
+                current_cell = grid_cells[posicaoNoGrid]
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_a:
+            if current_cell.walls["left"] == False:
+                posicaoNoGrid -= 1
+                current_cell = grid_cells[posicaoNoGrid]
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_w:
+            if current_cell.walls["top"] == False:
+                posicaoNoGrid -= cols
+                current_cell = grid_cells[posicaoNoGrid]
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+            if current_cell.walls["bottom"] == False:
+                posicaoNoGrid += cols
+                current_cell = grid_cells[posicaoNoGrid]
 
-    if not start or not goal:
-        raise ValueError("Ponto inicial ou objetivo não estão no labirinto!")
+    [cell.draw() for cell in grid_cells]
+    current_cell.visited = True
+    current_cell.draw_current_cell()
 
-    path = a_star(start, goal, nodes)
+    next_cell = current_cell.check_neighbors()
+    if next_cell:
+        next_cell.visited = True
+        stack.append(current_cell)
+        colors.append((min(color, 255), 0, 103))
+        color += 1
+        remove_walls(current_cell, next_cell)
+        current_cell = next_cell
+    elif stack:
+        current_cell = stack.pop()
 
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-        
-        window.fill(BLACK)
-        draw_maze(window, maze, path)
-        pygame.display.flip()
-    
-    pygame.quit()
+    # Run A* and draw path once maze generation is complete
+    if not stack and not next_cell and not path:
+        nodes = create_graph_from_maze(grid_cells)
+        start = nodes[(0, 0)]
+        goal = nodes[(cols - 1, rows - 1)]
+        path = a_star(start, goal,nodes)
+        if path:
+            print("Path found:", path)
+        else:
+            print("No path found")
 
-if __name__ == "__main__":
-    main()
+    # Draw the path found by A* algorithm
+    if path:
+        for step in path:
+            x, y = step
+            pygame.draw.rect(sc, pygame.Color('#FF0000'),
+                             (x * TILE + TILE // 4, y * TILE + TILE // 4,
+                              TILE // 2, TILE // 2))
+
+    pygame.display.flip()
+    clock.tick(30)  # Adjusted frame rate

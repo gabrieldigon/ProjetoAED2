@@ -1,4 +1,5 @@
 import pygame
+import AStar
 from random import choice
 
 RES = WIDTH, HEIGHT = 900, 900
@@ -80,12 +81,23 @@ def remove_walls(current, next):
         next.walls['top'] = False 
 
 def reset_game_state():
-    global grid_cells, current_cell, stack, colors, color, maze_array 
+    global grid_cells, current_cell, stack, colors, color, maze_array,path 
     grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
     current_cell = grid_cells[0]
     stack = []
-    colors, color = [], 40
+    colors, color = [], 10
+    path = []
 
+def drawAStarPath(path):
+    for step in path:
+            x, y = step
+            pygame.draw.rect(sc, pygame.Color('#FF0000'),
+                             (x * TILE + TILE // 4, y * TILE + TILE // 4,
+                              TILE // 2, TILE // 2))
+    
+    pygame.display.flip()
+    clock.tick(30)
+    
 # Logica do jogo
 
 pygame.init()
@@ -94,13 +106,13 @@ pygame.display.set_caption('Maze generator')
 clock = pygame.time.Clock()
 reset_game_state() 
 posicaoNoGrid = 0
+
 while True:
     sc.fill(pygame.Color('#FFFFFF'))
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            exit()
-
+            quit()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             reset_game_state()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_d:
@@ -119,9 +131,10 @@ while True:
             if current_cell.walls["bottom"] == False:
                 posicaoNoGrid += 18
                 current_cell = grid_cells[posicaoNoGrid]
-            
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+            if path:
+                drawAStarPath(path)
 
-            
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
     current_cell.draw_current_cell()
@@ -140,6 +153,16 @@ while True:
         current_cell=next_cell
     elif stack: 
         current_cell = stack.pop()
-        
+
+    if not stack and not next_cell and not path:
+        nodes = AStar.create_graph_from_maze(grid_cells)
+        start = nodes[(0, 0)]
+        goal = nodes[(cols - 1, rows - 1)]
+        path = AStar.a_star(start, goal,nodes)
+        if path:
+            print("Path found:", path)
+        else:
+            print("No path found")
+
     pygame.display.flip()
-    clock.tick() 
+    clock.tick(30) 
