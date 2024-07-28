@@ -106,6 +106,7 @@ pygame.display.set_caption('Maze generator')
 clock = pygame.time.Clock()
 reset_game_state() 
 posicaoNoGrid = 0
+shouldShowPath = False
 
 while True:
     sc.fill(pygame.Color('#FFFFFF'))
@@ -132,8 +133,10 @@ while True:
                 posicaoNoGrid += 18
                 current_cell = grid_cells[posicaoNoGrid]
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
-            if path:
-                drawAStarPath(path)
+            if shouldShowPath:
+                shouldShowPath = False
+            else:
+                shouldShowPath = True
 
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
@@ -163,6 +166,8 @@ while True:
             print("Path found:", path)
         else:
             print("No path found")
+    if shouldShowPath:
+        drawAStarPath(path)
 
     pygame.display.flip()
-    clock.tick(30) 
+    clock.tick(60) 
