@@ -5,6 +5,13 @@ from random import choice
 RES = WIDTH, HEIGHT = 900, 900
 TILE = 50
 cols, rows = WIDTH // TILE, HEIGHT // TILE
+# Load the image
+character = pygame.image.load('Personagens/codibentinho.png')
+character = pygame.transform.scale(character, (TILE - 2, TILE - 2))
+
+endGame = pygame.image.load('Personagens/estrelaMario.png')
+endGame = pygame.transform.scale(endGame, (TILE - 2, TILE - 2))
+
 
 class Cell:
     def __init__(self, x, y):
@@ -14,13 +21,11 @@ class Cell:
     
     def draw_current_cell(self):
         x, y = self.x * TILE, self.y * TILE
-        pygame.draw.rect(sc, pygame.Color('#228b22'),
-                         (x + 2, y + 2, TILE - 2, TILE - 2))
+        sc.blit(character, (x + 2, y + 2))
     
     def draw_end(self):
         x, y = self.x * TILE, self.y * TILE
-        pygame.draw.rect(sc, pygame.Color('#000000'),
-                         (x + 2, y + 2, TILE - 2, TILE - 2))
+        sc.blit(endGame, (x + 2, y + 2))
         
     def draw(self):
         x, y = self.x * TILE, self.y * TILE
@@ -143,6 +148,9 @@ while True:
                 shouldShowPath = False
             else:
                 shouldShowPath = True
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+            character = pygame.image.load('Personagens/professorRafael.png')
+            character = pygame.transform.scale(character, (TILE - 2, TILE - 2))
 
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
@@ -165,15 +173,14 @@ while True:
     elif stack: 
         current_cell = stack.pop()
 
-    if not stack and not next_cell and not path:
+    # Se o algoritmo de geração acabou ou seja se n tem nada na stack ,gere um grafo e descubra se existe um caminho
+
+    if not stack  :
         nodes = AStar.create_graph_from_maze(grid_cells)
         start = nodes[(0, 0)]
         goal = nodes[(cols - 1, rows - 1)]
         path = AStar.a_star(start, goal,nodes)
-        if path:
-            print("Path found:", path)
-        else:
-            print("No path found")
+       
     if shouldShowPath:
         drawAStarPath(path)
 
