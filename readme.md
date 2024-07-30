@@ -24,6 +24,7 @@ Este projeto é uma aplicação em python pra estudar os algoritmos A* e DFS com
 
 3. **Execute o arquivo main.py:**:
     ```bash
+    cd .\ProjetoAED2\
     py main.py
     ```
 
