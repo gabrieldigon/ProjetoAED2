@@ -11,6 +11,7 @@ Este projeto é uma aplicação em python pra estudar os algoritmos A* e DFS com
 - **`main.py`**: Código fonte da aplicação onde geramos o labirinto e fazemos toda a logica do jogo
 - **`Astar.py`**: Arquivo de suporte onde implementamos o algoritmo A* com a implementação de uma heap minima, esse algoritmo nos permite achar o menor caminho ate a saida do labirinto.
 - **`readme.md`**: Este arquivo de documentação.
+- **`suportingFile.py`**: Arquivo de suporte pra não deixar Strings hardCoded no codigo.
 
 ## Como Executar o Projeto
 

@@ -1,22 +1,24 @@
 import pygame
 import AStar
+import suportingFile
 from random import choice
-
+# Definindo o tamanho do grid e o tamanho das celulas, pode aumentar o tamanho do grid mas o ideal e que seja multiplo de 50
 RES = WIDTH, HEIGHT = 900, 900
 TILE = 50
 cols, rows = WIDTH // TILE, HEIGHT // TILE
-# Load the image
-character = pygame.image.load('Personagens/codibentinho.png')
+# Carregando as imagens
+character = pygame.image.load(suportingFile.characters.codibentinho.value)
 character = pygame.transform.scale(character, (TILE - 2, TILE - 2))
 
-endGame = pygame.image.load('Personagens/estrelaMario.png')
+endGame = pygame.image.load(suportingFile.characters.Estrela.value)
 endGame = pygame.transform.scale(endGame, (TILE - 2, TILE - 2))
 
-
+# definicao da classe de celula e suas funções de apoio
 class Cell:
     def __init__(self, x, y):
         self.x, self.y = x, y
-        self.walls = {'top': True, 'right': True, 'bottom': True, 'left': True}
+        self.walls = {suportingFile.orientation.top.value: True, suportingFile.orientation.right.value: True,
+                        suportingFile.orientation.bottom.value: True, suportingFile.orientation.left.value: True}
         self.visited = False
     
     def draw_current_cell(self):
@@ -30,21 +32,21 @@ class Cell:
     def draw(self):
         x, y = self.x * TILE, self.y * TILE
         if self.visited:
-            pygame.draw.rect(sc, pygame.Color('#FFFFFF'),
+            pygame.draw.rect(sc, pygame.Color(suportingFile.Color.backgroundColor.value),
                              (x, y, TILE, TILE))
-        if self.walls['top']:
-            pygame.draw.line(sc, pygame.Color('#000000'), 
+        if self.walls[suportingFile.orientation.top.value]:
+            pygame.draw.line(sc, pygame.Color(suportingFile.Color.lineColor.value), 
                              (x, y), (x + TILE, y), 6)
-        if self.walls['right']:
-            pygame.draw.line(sc, pygame.Color('#000000'), 
+        if self.walls[suportingFile.orientation.right.value]:
+            pygame.draw.line(sc, pygame.Color(suportingFile.Color.lineColor.value), 
                              (x + TILE, y), 
                              (x + TILE, y + TILE), 6)
-        if self.walls['bottom']:
-            pygame.draw.line(sc, pygame.Color('#000000'), 
+        if self.walls[suportingFile.orientation.bottom.value]:
+            pygame.draw.line(sc, pygame.Color(suportingFile.Color.lineColor.value), 
                              (x + TILE, y + TILE),
                              (x , y + TILE), 6)
-        if self.walls['left']:
-            pygame.draw.line(sc, pygame.Color('#000000'), 
+        if self.walls[suportingFile.orientation.left.value]:
+            pygame.draw.line(sc, pygame.Color(suportingFile.Color.lineColor.value), 
                              (x, y + TILE), (x, y), 6)
             
     def check_cell(self, x, y):
@@ -54,7 +56,7 @@ class Cell:
             return False
         
         return grid_cells[find_index(x, y)] 
-    
+    # checa os vizinhos pra atualizar a stack
     def check_neighbors(self):
         neighbors = []
         
@@ -73,23 +75,24 @@ class Cell:
             neighbors.append(left)
         
         return choice(neighbors) if neighbors else False   
-    
+# Remove as paredes na hora do backtracking
 def remove_walls(current, next):
     dx = current.x - next.x
     if dx == 1:
-        current.walls['left'] = False
-        next.walls['right'] = False
+        current.walls[suportingFile.orientation.left.value] = False
+        next.walls[suportingFile.orientation.right.value] = False
     elif dx == -1:
-        current.walls['right'] = False
-        next.walls['left'] = False
+        current.walls[suportingFile.orientation.right.value] = False
+        next.walls[suportingFile.orientation.left.value] = False
     dy = current.y - next.y
     if dy == 1:
-        current.walls['top'] = False
-        next.walls['bottom'] = False
+        current.walls[suportingFile.orientation.top.value] = False
+        next.walls[suportingFile.orientation.bottom.value] = False
     elif dy == -1:
-        current.walls['bottom'] = False
-        next.walls['top'] = False 
+        current.walls[suportingFile.orientation.bottom.value] = False
+        next.walls[suportingFile.orientation.top.value] = False 
 
+# Reseta o jogo deinindo as variaveis pra posicoes iniciais e refazendo o grid
 def reset_game_state():
     global grid_cells, current_cell, stack, colors, color, maze_array,path,end_place
     grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
@@ -102,7 +105,7 @@ def reset_game_state():
 def drawAStarPath(path):
     for step in path:
             x, y = step
-            pygame.draw.rect(sc, pygame.Color('#FF0000'),
+            pygame.draw.rect(sc, pygame.Color(suportingFile.Color.pathColor.value),
                              (x * TILE + TILE // 4, y * TILE + TILE // 4,
                               TILE // 2, TILE // 2))
     
@@ -120,27 +123,28 @@ posicaoNoGrid = 0
 shouldShowPath = False
 
 while True:
-    sc.fill(pygame.Color('#FFFFFF'))
+    sc.fill(pygame.Color(suportingFile.Color.backgroundColor.value))
     
+    # Movimentação e controles
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             quit()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             reset_game_state()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_d:
-            if current_cell.walls["right"] == False:
+            if current_cell.walls[suportingFile.orientation.right.value] == False:
                 posicaoNoGrid += 1
                 current_cell = grid_cells[posicaoNoGrid]
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_a:
-            if current_cell.walls["left"] == False:
+            if current_cell.walls[suportingFile.orientation.left.value] == False:
                 posicaoNoGrid -= 1
                 current_cell = grid_cells[posicaoNoGrid]
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_w:
-            if current_cell.walls["top"] == False:
+            if current_cell.walls[suportingFile.orientation.top.value] == False:
                 posicaoNoGrid -= 18
                 current_cell = grid_cells[posicaoNoGrid]
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-            if current_cell.walls["bottom"] == False:
+            if current_cell.walls[suportingFile.orientation.bottom.value] == False:
                 posicaoNoGrid += 18
                 current_cell = grid_cells[posicaoNoGrid]
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
@@ -149,9 +153,9 @@ while True:
             else:
                 shouldShowPath = True
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
-            character = pygame.image.load('Personagens/professorRafael.png')
+            character = pygame.image.load(suportingFile.characters.Professor.value)
             character = pygame.transform.scale(character, (TILE - 2, TILE - 2))
-
+    # começo da logica do DFS apos o resetGameState()
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
     current_cell.draw_current_cell()
@@ -180,9 +184,10 @@ while True:
         start = nodes[(0, 0)]
         goal = nodes[(cols - 1, rows - 1)]
         path = AStar.a_star(start, goal,nodes)
-       
+    # Se a tecla for apertada mostre o caminho
     if shouldShowPath:
         drawAStarPath(path)
 
+    # Uma otima maneira de enxergar o dfs em ação e limitar o fps pra 1
     pygame.display.flip()
     clock.tick(60) 

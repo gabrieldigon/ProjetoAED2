@@ -2,18 +2,18 @@ class Node:
     def __init__(self, name, neighbors=None):
         self.name = name
         self.neighbors = neighbors or {}
-        self.g = float('inf')  # Custo do início até este nó
-        self.h = float('inf')  # Heurística estimada do nó até o objetivo
+        self.g = float('inf')  # Custo di inicio ate o no
+        self.h = float('inf')  # Heurística 
         self.f = float('inf')  # g + h
-        self.parent = None  # Para reconstruir o caminho
+        self.parent = None  
 
     def __lt__(self, other):
         return self.f < other.f
-
+# Nossa heuristica pro A&
 def heuristic(node, goal):
-    # Usando a distância de Manhattan como exemplo de heurística
+    
     return abs(goal[0] - node[0]) + abs(goal[1] - node[1])
-
+#heap para implementar o A*
 def min_heapify(a, heap_size, i):
     l = 2 * i + 1
     r = 2 * i + 2
@@ -40,7 +40,7 @@ def extract_min(heap):
     heap.pop()
     min_heapify(heap, len(heap), 0)
     return min_elem
-
+# Função que transforma as coordenadas do grid em um grafo pra poder utilizar o A*
 def create_graph_from_maze(grid_cells):
     nodes = {}
     for cell in grid_cells:
@@ -56,7 +56,7 @@ def create_graph_from_maze(grid_cells):
             neighbors[(cell.x - 1, cell.y)] = 1
         nodes[name] = Node(name, neighbors)
     return nodes
-
+# Implementação do A*
 def a_star(start, goal,nodes):
     open_list = [start]
     closed_list = set()
@@ -94,6 +94,6 @@ def a_star(start, goal,nodes):
                 if neighbor not in open_list:
                     open_list.append(neighbor)
 
-    return None  # Se não houver caminho
+    return None  
 
 
