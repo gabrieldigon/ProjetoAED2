@@ -16,6 +16,11 @@ class Cell:
         x, y = self.x * TILE, self.y * TILE
         pygame.draw.rect(sc, pygame.Color('#228b22'),
                          (x + 2, y + 2, TILE - 2, TILE - 2))
+    
+    def draw_end(self):
+        x, y = self.x * TILE, self.y * TILE
+        pygame.draw.rect(sc, pygame.Color('#000000'),
+                         (x + 2, y + 2, TILE - 2, TILE - 2))
         
     def draw(self):
         x, y = self.x * TILE, self.y * TILE
@@ -81,9 +86,10 @@ def remove_walls(current, next):
         next.walls['top'] = False 
 
 def reset_game_state():
-    global grid_cells, current_cell, stack, colors, color, maze_array,path 
+    global grid_cells, current_cell, stack, colors, color, maze_array,path,end_place
     grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
     current_cell = grid_cells[0]
+    end_place = grid_cells[323]
     stack = []
     colors, color = [], 10
     path = []
@@ -141,6 +147,8 @@ while True:
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
     current_cell.draw_current_cell()
+    end_place.draw_end()
+    
     [pygame.draw.rect(sc, colors[i], 
                       (cell.x * TILE + 2, cell.y * TILE + 2,
                        TILE - 1, TILE - 1), border_radius=8) for i,
