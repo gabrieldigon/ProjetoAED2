@@ -12,6 +12,7 @@ Este projeto é uma aplicação em python pra estudar os algoritmos A* e DFS com
 - **`Astar.py`**: Arquivo de suporte onde implementamos o algoritmo A* com a implementação de uma heap minima, esse algoritmo nos permite achar o menor caminho ate a saida do labirinto.
 - **`readme.md`**: Este arquivo de documentação.
 - **`suportingFile.py`**: Arquivo de suporte pra não deixar Strings hardCoded no codigo.
+- **`Relatório - Projeto Opcional de Astar`**:Relatorio com o explicações basicas sobre o projeto.
 
 ## Como Executar o Projeto
 
